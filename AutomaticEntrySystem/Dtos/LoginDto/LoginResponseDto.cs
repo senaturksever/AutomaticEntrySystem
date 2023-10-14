@@ -1,9 +1,7 @@
 ﻿namespace AutomaticEntrySystem.Dtos.LoginDto
 {
-    public class LoginResponseDto
+    public class LoginResponseDto :ResultResponse
     {
-        public bool Status { get; set; }
-        public string StatusMessage { get; set; }
         public string? AuthToken { get; set; }
     }
 }
