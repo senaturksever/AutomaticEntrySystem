@@ -21,12 +21,19 @@ namespace AutomaticEntrySystem.Manager
         }
         public RegisterResponseDto Register(RegisterRequestDto requestDto)
         {
-            var parameter = new SqlParameter[3];
-            parameter[0] = Database.SetParameter("@email", System.Data.SqlDbType.NVarChar, 50, "Input", requestDto.Email);
-            parameter[1] = Database.SetParameter("@password", System.Data.SqlDbType.NVarChar, 50, "Input", requestDto.Password);
-            parameter[2] = Database.SetParameter("@userName", System.Data.SqlDbType.NVarChar, 50, "Input", requestDto.UserName);
+            var param = new SqlParameter[2];
+            param[0] = Database.SetParameter("@user", System.Data.SqlDbType.NVarChar, 50, "Input", requestDto.UserName);
+            param[1] = Database.SetParameter("@mail", System.Data.SqlDbType.NVarChar, 50, "Input", requestDto.Email);
+            var que = @"SELECT [Email], [UserName] FROM [Users] WHERE [Email] = @mail AND [UserName] = @user";
+            var dt = Database.GetDataTableParameter(que, param);
+            if(dt.Rows.Count == 0)
+            {
+                var parameter = new SqlParameter[3];
+                parameter[0] = Database.SetParameter("@email", System.Data.SqlDbType.NVarChar, 50, "Input", requestDto.Email);
+                parameter[1] = Database.SetParameter("@password", System.Data.SqlDbType.NVarChar, 50, "Input", requestDto.Password);
+                parameter[2] = Database.SetParameter("@userName", System.Data.SqlDbType.NVarChar, 50, "Input", requestDto.UserName);
 
-            var query = @"INSERT INTO [Users]
+                var query = @"INSERT INTO [Users]
                                    ([Email]
                                    ,[Password]
                                    ,[UserName])
@@ -34,22 +41,33 @@ namespace AutomaticEntrySystem.Manager
                                    (@email
                                    ,@password
                                    ,@userName)";
-            var result = Database.ExecuteNonQueryWithParameters(query, parameter);
-            if (result > 0)
+                var result = Database.ExecuteNonQueryWithParameters(query, parameter);
+                if (result > 0)
+                {
+                    return new RegisterResponseDto
+                    {
+                        Status = true,
+                        statusCode = 1,
+                        StatusMessage = "Kayıt işlemi başarılı"
+                    };
+                }
+                return new RegisterResponseDto
+                {
+                    Status = false,
+                    statusCode = 0,
+                    StatusMessage = "Kayıt işlemi Başarısız"
+                };
+            }
+            else
             {
                 return new RegisterResponseDto
                 {
-                    Status = true,
-                    statusCode = 1,
-                    StatusMessage = "Kayıt işlemi başarılı"
+                    Status = false,
+                    statusCode = 0,
+                    StatusMessage = "Tekrar Eden Kayıt"
                 };
             }
-            return new RegisterResponseDto
-            {
-                Status = false,
-                statusCode = 0,
-                StatusMessage = "Kayıt işlemi Başarısız"
-            };
+          
         }
 
         public LoginResponseDto Login(LoginRequestDto loginRequestDto)
